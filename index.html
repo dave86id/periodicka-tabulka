@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Periodická tabulka prvků</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Periodická tabulka prvků</h1>
+    <div class="search-wrap">
+      <input
+        id="search"
+        class="search"
+        type="search"
+        autocomplete="off"
+        placeholder="Hledat"
+        aria-label="Hledat prvek"
+      />
+      <span id="search-count" class="search-count" aria-live="polite"></span>
+    </div>
+  </header>
+
+  <main>
+    <div id="periodic-table" class="periodic-table" aria-label="Periodická tabulka"></div>
+
+    <section id="legend" class="legend" aria-label="Legenda kategorií"></section>
+  </main>
+
+  <div id="tooltip" class="tooltip" role="tooltip" aria-hidden="true"></div>
+
+  <script src="elements.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
