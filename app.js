@@ -82,11 +82,13 @@ function render() {
 }
 
 function highlightCategory(cat) {
+  if (activeTile) return; // modal otevřen → ignoruj hover legendy
   legendCat = cat;
   applyFilter();
 }
 
 function clearHighlight() {
+  if (activeTile) return;
   legendCat = null;
   applyFilter();
 }
@@ -247,6 +249,12 @@ async function openPanel(el, tile, e) {
   if (activeTile) activeTile.classList.remove("active");
   activeTile = tile;
   tile.classList.add("active");
+
+  // zruš případný aktivní hover-filter z legendy
+  if (legendCat) {
+    legendCat = null;
+    applyFilter();
+  }
 
   activeId++;
   const my = activeId;
