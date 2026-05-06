@@ -24,12 +24,15 @@
   </header>
 
   <main>
-    <div id="periodic-table" class="periodic-table" aria-label="Periodická tabulka"></div>
+    <div class="table-scroll">
+      <div id="periodic-table" class="periodic-table" aria-label="Periodická tabulka"></div>
+    </div>
 
     <section id="legend" class="legend" aria-label="Legenda kategorií"></section>
   </main>
 
-  <div id="tooltip" class="tooltip" role="tooltip" aria-hidden="true"></div>
+  <div id="modal-backdrop" class="modal-backdrop" aria-hidden="true"></div>
+  <div id="tooltip" class="tooltip" role="dialog" aria-hidden="true"></div>
 
   <script src="elements.js"></script>
   <script src="app.js"></script>

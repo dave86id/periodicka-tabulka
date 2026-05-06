@@ -66,6 +66,13 @@ main {
   width: 100%;
 }
 
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 .periodic-table {
   width: 100%;
   display: grid;
@@ -477,7 +484,75 @@ main {
   color: var(--fg-dim);
 }
 
+/* Backdrop pro mobilní bottom-sheet */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+  z-index: 90;
+}
+.modal-backdrop.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (min-width: 761px) {
+  .modal-backdrop { display: none; }
+}
+
 @media (max-width: 760px) {
-  .tile .name { display: none; }
-  .tile { padding: 2px; }
+  header { padding: 16px 12px 4px; }
+  header h1 { font-size: 20px; }
+  main { padding: 12px 0 24px; gap: 16px; }
+
+  /* tabulka má pevnou šířku, scrolluje horizontálně */
+  .table-scroll {
+    overflow: auto;
+    padding: 4px 12px;
+    scroll-padding: 12px;
+  }
+  .periodic-table {
+    width: 880px;
+    min-width: 880px;
+    /* aspect-ratio drží výšku, výška ~ 460px */
+  }
+
+  .tile { padding: 3px; border-radius: 5px; }
+  .tile .z { font-size: 10px; }
+  .tile .symbol { font-size: 18px; }
+  .tile .name {
+    display: block;
+    font-size: 9px;
+  }
+  .tile .radio-mark { font-size: 12px; top: 1px; right: 2px; }
+  /* žádný hover lift na touch */
+  .tile:hover { transform: none; box-shadow: none; }
+
+  .legend { gap: 8px; padding: 0 12px; }
+  .legend-item { font-size: 12px; padding: 3px 6px; }
+
+  /* Modal jako bottom-sheet */
+  .tooltip {
+    left: 0 !important;
+    right: 0;
+    top: auto !important;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 82vh;
+    overflow-y: auto;
+    border-radius: 16px 16px 0 0;
+    border-bottom: 0;
+    transform: translateY(100%);
+    padding: 14px 16px 24px;
+    pointer-events: auto;
+  }
+  .tooltip.visible { transform: translateY(0); }
+  .tt-image-wrap { height: 180px; }
+  .tt-props { grid-template-columns: 1fr; }
+
+  /* zákaz scrollu pozadí když je modal otevřený */
+  body.modal-open { overflow: hidden; }
 }

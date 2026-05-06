@@ -5,6 +5,10 @@ const panelEl = document.getElementById("tooltip"); // nazveno tooltip kvůli za
 const legendEl = document.getElementById("legend");
 const searchEl = document.getElementById("search");
 const searchCountEl = document.getElementById("search-count");
+const backdropEl = document.getElementById("modal-backdrop");
+
+const mobileMQ = window.matchMedia("(max-width: 760px)");
+const isMobile = () => mobileMQ.matches;
 
 const imageCache = new Map();
 const inflight = new Map();
@@ -78,6 +82,7 @@ function render() {
     item.innerHTML = `<span class="legend-swatch" style="background:${cat.color}"></span><span>${cat.label}</span>`;
     item.addEventListener("mouseenter", () => scheduleHighlight(key));
     item.addEventListener("mouseleave", cancelHighlight);
+    item.addEventListener("click", () => toggleLegendCategory(key));
     legendEl.appendChild(item);
   }
 }
@@ -104,6 +109,14 @@ function cancelHighlight() {
     legendCat = null;
     applyFilter();
   }
+}
+
+function toggleLegendCategory(cat) {
+  if (activeTile) return;
+  clearTimeout(legendHoverTimer);
+  legendHoverTimer = null;
+  legendCat = legendCat === cat ? null : cat;
+  applyFilter();
 }
 
 function matchesSearch(el, q) {
@@ -277,7 +290,19 @@ async function openPanel(el, tile, e) {
   panelEl.innerHTML = panelHTML(el);
   panelEl.classList.add("visible");
   panelEl.setAttribute("aria-hidden", "false");
-  positionPanel(tile);
+
+  if (isMobile()) {
+    // bottom-sheet: bez inline pozice, CSS to řeší
+    panelEl.style.left = "";
+    panelEl.style.top = "";
+    panelEl.style.visibility = "";
+    backdropEl?.classList.add("visible");
+    backdropEl?.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    panelEl.scrollTop = 0;
+  } else {
+    positionPanel(tile);
+  }
 
   panelEl.querySelector(".tt-close")?.addEventListener("click", (ev) => {
     ev.stopPropagation();
@@ -335,6 +360,9 @@ function closePanel() {
   activeId++;
   panelEl.classList.remove("visible");
   panelEl.setAttribute("aria-hidden", "true");
+  backdropEl?.classList.remove("visible");
+  backdropEl?.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
   if (activeTile) {
     activeTile.classList.remove("active");
     activeTile = null;
@@ -404,9 +432,12 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// reposition při scrollu/resize
-window.addEventListener("resize", () => { if (activeTile) positionPanel(activeTile); });
-window.addEventListener("scroll", () => { if (activeTile) positionPanel(activeTile); }, { passive: true });
+// reposition při scrollu/resize (jen desktop)
+window.addEventListener("resize", () => { if (activeTile && !isMobile()) positionPanel(activeTile); });
+window.addEventListener("scroll", () => { if (activeTile && !isMobile()) positionPanel(activeTile); }, { passive: true });
+
+// klik na backdrop zavře (mobil)
+backdropEl?.addEventListener("click", closePanel);
 
 // search
 searchEl?.addEventListener("input", (e) => {
