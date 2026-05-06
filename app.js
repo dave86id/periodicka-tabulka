@@ -14,6 +14,7 @@ let activeId = 0;
 let searchQuery = "";
 let legendCat = null;
 const ELEMENTS_BY_Z = new Map(ELEMENTS.map(e => [e.z, e]));
+const ELEMENTS_BY_POS = new Map(ELEMENTS.map(e => [`${e.row},${e.col}`, e]));
 
 function fmtMass(m) {
   if (m == null) return "—";
@@ -75,22 +76,34 @@ function render() {
     item.className = "legend-item";
     item.dataset.cat = key;
     item.innerHTML = `<span class="legend-swatch" style="background:${cat.color}"></span><span>${cat.label}</span>`;
-    item.addEventListener("mouseenter", () => highlightCategory(key));
-    item.addEventListener("mouseleave", clearHighlight);
+    item.addEventListener("mouseenter", () => scheduleHighlight(key));
+    item.addEventListener("mouseleave", cancelHighlight);
     legendEl.appendChild(item);
   }
 }
 
-function highlightCategory(cat) {
-  if (activeTile) return; // modal otevřen → ignoruj hover legendy
-  legendCat = cat;
-  applyFilter();
+const LEGEND_HOVER_DELAY = 300;
+let legendHoverTimer = null;
+
+function scheduleHighlight(cat) {
+  if (activeTile) return;
+  clearTimeout(legendHoverTimer);
+  legendHoverTimer = setTimeout(() => {
+    legendHoverTimer = null;
+    if (activeTile) return;
+    legendCat = cat;
+    applyFilter();
+  }, LEGEND_HOVER_DELAY);
 }
 
-function clearHighlight() {
+function cancelHighlight() {
+  clearTimeout(legendHoverTimer);
+  legendHoverTimer = null;
   if (activeTile) return;
-  legendCat = null;
-  applyFilter();
+  if (legendCat !== null) {
+    legendCat = null;
+    applyFilter();
+  }
 }
 
 function matchesSearch(el, q) {
@@ -250,7 +263,9 @@ async function openPanel(el, tile, e) {
   activeTile = tile;
   tile.classList.add("active");
 
-  // zruš případný aktivní hover-filter z legendy
+  // zruš případný aktivní/čekající hover-filter z legendy
+  clearTimeout(legendHoverTimer);
+  legendHoverTimer = null;
   if (legendCat) {
     legendCat = null;
     applyFilter();
@@ -337,6 +352,56 @@ document.addEventListener("click", (e) => {
 // Esc zavře
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && activeTile) closePanel();
+});
+
+// šipky → navigace mezi prvky
+const ARROW_DELTA = {
+  ArrowRight: [0, 1],
+  ArrowLeft:  [0, -1],
+  ArrowDown:  [1, 0],
+  ArrowUp:    [-1, 0],
+};
+
+function findNeighbor(z, dRow, dCol) {
+  const el = ELEMENTS_BY_Z.get(z);
+  if (!el) return null;
+  let r = el.row, c = el.col;
+  for (let i = 0; i < 30; i++) {
+    r += dRow; c += dCol;
+    if (r < 1 || r > 10 || c < 1 || c > 18) return null;
+    const next = ELEMENTS_BY_POS.get(`${r},${c}`);
+    if (next) return next;
+  }
+  return null;
+}
+
+document.addEventListener("keydown", (e) => {
+  const delta = ARROW_DELTA[e.key];
+  if (!delta) return;
+  // ignoruj když je fokus v inputu
+  const t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
+
+  let currentZ;
+  if (activeTile) {
+    currentZ = parseInt(activeTile.dataset.z, 10);
+  } else if (document.activeElement?.classList?.contains("tile")) {
+    currentZ = parseInt(document.activeElement.dataset.z, 10);
+  } else {
+    // bez výchozího prvku — vyber Vodík
+    currentZ = 1;
+  }
+
+  const next = findNeighbor(currentZ, delta[0], delta[1]);
+  if (!next) return;
+  e.preventDefault();
+
+  const nextTile = tableEl.querySelector(`.tile[data-z="${next.z}"]`);
+  if (!nextTile) return;
+  nextTile.focus();
+  if (activeTile) {
+    openPanel(next, nextTile);
+  }
 });
 
 // reposition při scrollu/resize
