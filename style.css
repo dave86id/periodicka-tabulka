@@ -514,19 +514,19 @@ main {
     scroll-padding: 12px;
   }
   .periodic-table {
-    width: 1056px;
-    min-width: 1056px;
+    width: 1162px;
+    min-width: 1162px;
     /* aspect-ratio drží výšku */
   }
 
   .tile { padding: 4px; border-radius: 6px; }
-  .tile .z { font-size: 12px; }
-  .tile .symbol { font-size: 22px; }
+  .tile .z { font-size: 13px; }
+  .tile .symbol { font-size: 24px; }
   .tile .name {
     display: block;
-    font-size: 11px;
+    font-size: 12px;
   }
-  .tile .radio-mark { font-size: 14px; top: 2px; right: 3px; }
+  .tile .radio-mark { font-size: 15px; top: 2px; right: 3px; }
   /* žádný hover lift na touch */
   .tile:hover { transform: none; box-shadow: none; }
 
